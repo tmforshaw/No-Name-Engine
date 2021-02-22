@@ -71,7 +71,7 @@ unsigned short Chunk::GetNeighbour( unsigned short i, unsigned short j, unsigned
 		break;
 
 	case Face::BACK:
-		if ( j < CHUNKSIZE ) new_j++;
+		if ( j < CHUNKSIZE - 1 ) new_j++;
 		else
 			return 0; // Return that it is an air block because it is outside of the chunk
 		break;
@@ -83,7 +83,7 @@ unsigned short Chunk::GetNeighbour( unsigned short i, unsigned short j, unsigned
 		break;
 
 	case Face::LEFT:
-		if ( k < CHUNKSIZE ) new_k++;
+		if ( k < CHUNKSIZE - 1 ) new_k++;
 		else
 			return 0; // Return that it is an air block because it is outside of the chunk
 		break;
@@ -95,7 +95,7 @@ unsigned short Chunk::GetNeighbour( unsigned short i, unsigned short j, unsigned
 		break;
 
 	case Face::TOP:
-		if ( i < CHUNKSIZE ) new_i++;
+		if ( i < CHUNKSIZE - 1 ) new_i++;
 		else
 			return 0; // Return that it is an air block because it is outside of the chunk
 		break;

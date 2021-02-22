@@ -1,7 +1,7 @@
 
 # This is messy as fuck and it's mostly because I have to include glad.c but also because I am bad with Makefiles
 
-PROJECTNAME = OpenGL_Project
+PROJECTNAME = NoNameEngine
 
 CC = g++
 CFLAGS = -std=c++2a

@@ -72,9 +72,9 @@ int main()
 	// Enable the use of the z-buffer
 	glEnable( GL_DEPTH_TEST );
 
-	// // Enable face culling
-	// glEnable( GL_CULL_FACE );
-	// glCullFace( GL_BACK );
+	// Enable face culling
+	glEnable( GL_CULL_FACE );
+	glCullFace( GL_BACK );
 
 	// Register callback functions here
 

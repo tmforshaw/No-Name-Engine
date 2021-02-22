@@ -40,7 +40,7 @@ public:
 	glm::vec3 yDirection;
 
 	// Instantiation function
-	Camera( glm::vec3 pos = glm::vec3( ( 0.0f, 0.0f, 3.0f ) ), glm::vec2 rot = glm::vec3( glm::radians( -90.0f ), 0.0f, 0.0f ) );
+	Camera( glm::vec3 pos = glm::vec3( 0.0f, 20.0f, 0.0f ), glm::vec2 rot = glm::vec2( glm::radians( 45.0f ), 0.0f ) );
 
 	// User input functions
 	void ProcessKeyboard( CameraMovement dir, float deltaT );
@@ -49,6 +49,8 @@ public:
 
 	// Matrix to convert from world coords to view coords
 	glm::mat4 GetViewMatrix();
+
+	glm::vec3 GetPos();
 
 private:
 	// Update all of the camera's axis and rotations

@@ -12,7 +12,7 @@
 class Chunk
 {
 private:
-	unsigned short	   i, j, k;
+	unsigned short	   pos_i, pos_j, pos_k;
 	unsigned short	   cubes[CHUNKSIZE][CHUNKSIZE][CHUNKSIZE];
 	std::vector<float> mesh;
 
@@ -20,12 +20,14 @@ public:
 	Chunk();
 	Chunk( unsigned short p_i, unsigned short p_j, unsigned short p_k );
 
-	glm::vec3 GetPosition( unsigned short i, unsigned short j, unsigned short k );
+	glm::vec3 GetPosition( unsigned short i, unsigned short j, unsigned short k ) const;
 
 	void GenerateMesh();
-	void DrawMesh( VertexBufferObject* VBO );
+	void DrawMesh( VertexBufferObject* VBO ) const;
 
-	unsigned short GetNeighbour( unsigned short i, unsigned short j, unsigned short k, Face face );
+	unsigned short GetCube( unsigned short i, unsigned short j, unsigned short k ) const;
+	unsigned short GetNeighbourChunkBlock( unsigned short i, unsigned short j, unsigned short k, Face face ) const;
+	unsigned short GetNeighbour( unsigned short i, unsigned short j, unsigned short k, Face face ) const;
 
 	void Fill( unsigned short value );
 };

@@ -8,15 +8,15 @@
 
 enum class Face
 {
-	RIGHT,
-	LEFT,
 	FRONT,
 	BACK,
+	RIGHT,
+	LEFT,
 	BOTTOM,
 	TOP
 };
 
-constexpr std::initializer_list<Face> FaceItr = { Face::RIGHT, Face::LEFT, Face::FRONT, Face::BACK, Face::BOTTOM, Face::TOP };
+constexpr std::initializer_list<Face> FaceItr = { Face::FRONT, Face::BACK, Face::RIGHT, Face::LEFT, Face::BOTTOM, Face::TOP };
 
 namespace Cube
 {

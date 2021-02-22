@@ -13,7 +13,7 @@
 #define maxFOV 75.0f
 
 // Instantiate the camera
-Camera cam( { 0.0f, 0.0f, 0.0f } );
+Camera cam( { 0.0f, 20.0f, 0.0f } );
 
 Camera::Camera( glm::vec3 pos, glm::vec2 rot )
 	: mouseSensitivity( mouseSens ), moveSpeed( mSpeed ), moveSpeedFast( mSpeedFast ), worldUp( glm::vec3( 0.0f, 1.0f, 0.0f ) ), zoomSensitivity( zoomSens ), fov( fovDefault ), movingFast( false )
@@ -87,6 +87,11 @@ glm::mat4 Camera::GetViewMatrix()
 {
 	// Use the LookAt matrix to move and rotate the camera
 	return glm::lookAt( position, position + zDirection, worldUp );
+}
+
+glm::vec3 Camera::GetPos()
+{
+	return position;
 }
 
 void Camera::UpdateVectors()

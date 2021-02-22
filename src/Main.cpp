@@ -8,6 +8,7 @@
 #include "Constants.hpp"
 #include "Input/GL_Callbacks.hpp"
 #include "Input/Input.hpp"
+#include "Noise/PerlinNoise.hpp"
 #include "ObjectBuffers/EntityBufferObject.hpp"
 #include "ObjectBuffers/VertexArrayObject.hpp"
 #include "ObjectBuffers/VertexBufferObject.hpp"
@@ -20,13 +21,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <random>
 
 // Timing variables
 float deltaT	= 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
-
-// Instantiate a world
-World world = World();
 
 int main()
 {
@@ -98,7 +97,7 @@ int main()
 	VertexBufferObject VBO = VertexBufferObject( sizeof( Cube::vertices ), Cube::vertices, GL_STATIC_DRAW );
 
 	// Instantiate the texture
-	Texture kittenTex( "src/Textures/Kitten.jpeg" );
+	Texture cubeTex( "src/Textures/Caveman.jpeg" );
 	shader.Use();					// Apply the shader
 	shader.SetInt( "texture1", 0 ); // Set the texture index in the shader
 
@@ -106,7 +105,7 @@ int main()
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
 	// Generate the chunk
-	world.chunks[0][0][0].GenerateMesh();
+	world.GenerateChunkMeshes( cam.GetPos() );
 
 	// Draw Loop
 	while ( !glfwWindowShouldClose( window ) )
@@ -124,14 +123,14 @@ int main()
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		// Bind and activate the textures
-		kittenTex.Bind();
+		cubeTex.Bind();
 
 		// Move the camera and change the zoom
 		view	   = cam.GetViewMatrix();
 		projection = glm::perspective( glm::radians( cam.fov ), (float)width / (float)height, 0.1f, 100.0f );
 
 		// Update the shader uniform values
-		shader.SetFloat3( "addedColour", sin( currentFrame ), cos( currentFrame ), sin( currentFrame * 0.75 ) );
+		// shader.SetFloat3( "addedColour", sin( currentFrame ), cos( currentFrame ), sin( currentFrame * 0.75 ) );
 
 		// Update the shader projection uniforms
 		shader.SetMat4( "view", view );

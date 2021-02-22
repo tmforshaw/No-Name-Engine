@@ -1,11 +1,8 @@
 #pragma once
-// clang-format off
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-// clang-format on
-
 #include "../Constants.hpp"
 #include "Input.hpp"
+
+#include <glad/glad.h>
 
 // Mouse variables
 static float prevMouseX = width / 2, prevMouseY = height / 2;

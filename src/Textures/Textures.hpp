@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 class Texture
 {
@@ -7,7 +8,6 @@ public:
 	int			   width, height, channelAmt;
 	unsigned char* data;
 
-	Texture();
 	Texture( const char* path );
 
 	void Bind();

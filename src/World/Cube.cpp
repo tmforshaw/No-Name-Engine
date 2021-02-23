@@ -1,6 +1,6 @@
 #include "Cube.hpp"
 
-#include "Vertex.hpp"
+#include "../Constants.hpp"
 
 namespace Cube
 {
@@ -20,7 +20,7 @@ namespace Cube
 				vector->push_back( vertices[indices[(short)face * CUBEFACESIZE + i] * VERTEXSIZE + j] );
 	}
 
-	void PushFaceWithMatrix( std::vector<float> *vector, const Face &face, glm::mat4 model )
+	void PushFaceWithMatrix( std::vector<float> *vector, TextureAtlas texSheet, unsigned short type, const Face &face, glm::mat4 model )
 	{
 		for ( unsigned short i = 0; i < CUBEFACESIZE; i++ ) // Iterate indices
 		{
@@ -38,21 +38,16 @@ namespace Cube
 			vector->push_back( projectedPosition.x );
 			vector->push_back( projectedPosition.y );
 			vector->push_back( projectedPosition.z );
-			vector->push_back( texCoords[0] );
-			vector->push_back( texCoords[1] );
+
+			float texCoordArray[8];
+			texSheet.GetTexturePos( type - 1, texCoordArray );
+
+			unsigned short texCoordType = indices[(short)face * CUBEFACESIZE + i] % 4;
+
+			// Push the coordinates
+			vector->push_back( texCoordArray[texCoordType * 2] );
+			vector->push_back( texCoordArray[texCoordType * 2 + 1] );
 		}
-	}
-
-	void PushCube( std::vector<float> *vector )
-	{
-		for ( auto &face : FaceItr ) // Iterate through Face enum
-			Cube::PushFace( vector, face );
-	}
-
-	void PushCubeWithMatrix( std::vector<float> *vector, glm::mat4 model )
-	{
-		for ( auto &face : FaceItr ) // Iterate through Face enum
-			Cube::PushFaceWithMatrix( vector, face, model );
 	}
 
 } // namespace Cube

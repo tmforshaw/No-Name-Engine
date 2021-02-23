@@ -44,3 +44,23 @@ void Texture::Bind()
 	glActiveTexture( GL_TEXTURE0 + ( ID - 1 ) );
 	glBindTexture( GL_TEXTURE_2D, ID );
 }
+
+// namespace TextureAtlas
+// {
+// 	void GetTexPos( unsigned short ID, float ( &outArray )[8] )
+// 	{
+// 		unsigned short i = ID / (float)this->width, j = ID % this->width;
+
+// 		outArray[0] = (float)j * SPRITE_WIDTH / (float)this->width;
+// 		outArray[1] = (float)i * SPRITE_HEIGHT / (float)this->height;
+
+// 		outArray[2] = (float)( j + 1 ) * SPRITE_WIDTH / (float)this->width;
+// 		outArray[3] = (float)i * SPRITE_HEIGHT / (float)this->height;
+
+// 		outArray[4] = (float)( j + 1 ) * SPRITE_WIDTH / (float)this->width;
+// 		outArray[5] = (float)( i + 1 ) * SPRITE_HEIGHT / (float)this->height;
+
+// 		outArray[6] = (float)j * SPRITE_WIDTH / (float)this->width;
+// 		outArray[7] = (float)( i + 1 ) * SPRITE_HEIGHT / (float)this->height;
+// 	}
+// } // namespace TextureAtlas

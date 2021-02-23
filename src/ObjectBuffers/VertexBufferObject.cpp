@@ -1,5 +1,7 @@
 #include "VertexBufferObject.hpp"
 
+#include "../Constants.hpp"
+
 VertexBufferObject::VertexBufferObject( GLsizeiptr size, const void* data, GLenum usage )
 {
 	// Generate the buffer
@@ -27,8 +29,8 @@ void VertexBufferObject::SetData( GLsizeiptr size, const void* data, GLenum usag
 	glBufferData( GL_ARRAY_BUFFER, size, data, usage );
 
 	// Set the structure of the data in the array
-	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof( float ), (void*)0 );						// Position attribute
-	glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof( float ), (void*)( 3 * sizeof( float ) ) ); // Texture map attribute
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, VERTEXSIZE * sizeof( float ), (void*)0 );						 // Position attribute
+	glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, VERTEXSIZE * sizeof( float ), (void*)( 3 * sizeof( float ) ) ); // Texture map attribute
 
 	// Enable the pointers to that structure
 	glEnableVertexAttribArray( 0 );

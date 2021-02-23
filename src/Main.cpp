@@ -14,6 +14,7 @@
 #include "ObjectBuffers/VertexBufferObject.hpp"
 #include "Shaders/Shaders.hpp"
 #include "Textures/Textures.hpp"
+#include "Textures/TextureAtlas.hpp"
 #include "World/World.hpp"
 
 #include <cmath>
@@ -96,16 +97,15 @@ int main()
 	EntityBufferObject EBO = EntityBufferObject( sizeof( Cube::indices ), Cube::indices, GL_STATIC_DRAW );
 	VertexBufferObject VBO = VertexBufferObject( sizeof( Cube::vertices ), Cube::vertices, GL_STATIC_DRAW );
 
-	// Instantiate the texture
-	Texture cubeTex( "src/Textures/Caveman.jpeg" );
-	shader.Use();					// Apply the shader
-	shader.SetInt( "texture1", 0 ); // Set the texture index in the shader
+	// Instantiate the textures array
+	TextureAtlas textureAtlas( "src/Textures/TextureSheet.jpeg" );
+	shader.Use(); // Apply the shader
+	shader.SetInt( "sampler1", 0 );
 
 	// Set the type of drawing (Fill or Stroke)
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
-	// Generate the chunk
-	world.GenerateChunkMeshes( cam.GetPos() );
+	InitWorld( glfwGetTime() );
 
 	// Draw Loop
 	while ( !glfwWindowShouldClose( window ) )
@@ -122,8 +122,8 @@ int main()
 		glClearColor( 0.2f, 0.3f, 0.3f, 1.0f );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-		// Bind and activate the textures
-		cubeTex.Bind();
+		// Generate the chunks
+		world.GenerateChunkMeshes( cam.GetPos(), textureAtlas );
 
 		// Move the camera and change the zoom
 		view	   = cam.GetViewMatrix();

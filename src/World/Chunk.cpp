@@ -2,10 +2,10 @@
 
 #include "../Camera/Projections.hpp"
 #include "../Noise/PerlinNoise.hpp"
-#include "../Textures/Textures.hpp"
 #include "World.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 
 Chunk::Chunk()
 {
@@ -14,6 +14,10 @@ Chunk::Chunk()
 
 	// Initialise chunks
 	unsigned short cubes[CHUNKSIZE][CHUNKSIZE][CHUNKSIZE] = {};
+
+	// Set it as undrawn and ungenerated
+	drawn	  = false;
+	generated = false;
 }
 
 Chunk::Chunk( unsigned short p_i, unsigned short p_j, unsigned short p_k )
@@ -24,8 +28,12 @@ Chunk::Chunk( unsigned short p_i, unsigned short p_j, unsigned short p_k )
 	// Initialise chunks
 	unsigned short cubes[CHUNKSIZE][CHUNKSIZE][CHUNKSIZE] = {};
 
-	// Set all values to 1
-	Fill( 1 );
+	// Set it as undrawn and ungenerated
+	drawn	  = false;
+	generated = false;
+
+	// Generate the blocks
+	GenerateBlocks();
 }
 
 glm::vec3 Chunk::GetPosition( unsigned short i, unsigned short j, unsigned short k ) const
@@ -33,10 +41,22 @@ glm::vec3 Chunk::GetPosition( unsigned short i, unsigned short j, unsigned short
 	return glm::vec3( k + pos_k * CHUNKSIZE, i + pos_i * CHUNKSIZE, j + pos_j * CHUNKSIZE );
 }
 
-void Chunk::GenerateMesh()
+bool Chunk::IsGenerated() const
+{
+	return generated;
+}
+
+bool Chunk::IsDrawn() const
+{
+	return drawn;
+}
+
+void Chunk::GenerateMesh( TextureAtlas texSheet )
 {
 	// Reset the mesh and texture
-	mesh = {};
+	mesh	   = {};
+	textures   = {};
+	textureIDs = {};
 
 	for ( unsigned short i = 0; i < CHUNKSIZE; i++ )		 // Iterate Y
 		for ( unsigned short j = 0; j < CHUNKSIZE; j++ )	 // Iterate Z
@@ -45,15 +65,47 @@ void Chunk::GenerateMesh()
 				if ( cubes[i][j][k] != 0 )						  // Is a block
 					for ( auto& face : FaceItr )				  // Iterate through Face enum
 						if ( GetNeighbour( i, j, k, face ) == 0 ) // Neighbour isn't a block
-							Cube::PushFaceWithMatrix( &mesh, face, glm::translate( glm::mat4( 1.0f ), GetPosition( i, j, k ) ) );
+						{
+							// std::vector<unsigned short> faceTexIDs;
+							Cube::PushFaceWithMatrix( &mesh, texSheet, cubes[i][j][k], face, glm::translate( glm::mat4( 1.0f ), GetPosition( i, j, k ) ) );
+							// textures.push_back( cubes[i][j][k] );
+
+							// // Push faceTexIDs onto textureIDs
+							// for ( auto& textureID : faceTexIDs )
+							// 	textureIDs.push_back( textureID );
+						}
 			}
+
+	generated = true;
 }
 
-void Chunk::DrawMesh( VertexBufferObject* VBO ) const
+// float coords[] = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f };
+
+void Chunk::DrawMesh( VertexBufferObject* VBO )
 {
 	VBO->SetData( mesh.size() * sizeof( float ), mesh.data(), GL_STATIC_DRAW );
 
+	// tex.Bind();
+	// shader.SetInt( "sampler1", 0 );
+
+	// for ( unsigned short i = 0; i < mesh.size() / CUBEFACESIZE; i++ ) // Use 6 because thats the number of vertices positions in a face
+	// {
+	// float texCoordArray[8];
+	// tex.GetTexPos( textures[i / CUBEFACESIZE], texCoordArray );
+	// tex.Bind();
+
+	// std::cout << textureIDs[i / ( CUBEFACESIZE * 0.5f )] << std::endl;
+
+	// std::cout << textureIDs[i / ( CUBEFACESIZE / 2 )] << ": " << coords[textureIDs[i / ( CUBEFACESIZE / 2 )]] << "   " << coords[textureIDs[i / ( CUBEFACESIZE / 2 )] + 1] << std::endl;
+
+	// shader.SetFloat2( "texCoord", coords[textureIDs[i / ( CUBEFACESIZE / 2 )]], coords[textureIDs[i / ( CUBEFACESIZE / 2 )] + 1] );
+
+	// glDrawArrays( GL_TRIANGLES, i * CUBEFACESIZE, CUBEFACESIZE );
+	// }
+
 	glDrawArrays( GL_TRIANGLES, 0, mesh.size() );
+
+	if ( !drawn ) drawn = true;
 }
 
 unsigned short Chunk::GetCube( unsigned short i, unsigned short j, unsigned short k ) const
@@ -186,23 +238,21 @@ outsideChunk:
 	return GetNeighbourChunkBlock( i, j, k, face ); // Index is outside of chunk, check the neighbouring chunk
 }
 
-void Chunk::Fill( unsigned short value )
+void Chunk::GenerateBlocks()
 {
-	// Seed the random function
-	srand( glfwGetTime() );
-
-	// Generate perlin noise
-	float noise[NOISE_SIZE_Y][NOISE_SIZE_X];
-	PerlinNoise2D( rand(), 6, noise, 0.2f );
-
 	// Reset chunk
 	for ( unsigned short j = 0; j < CHUNKSIZE; j++ )		 // Iterate Z
 		for ( unsigned short k = 0; k < CHUNKSIZE; k++ )	 // Iterate X
 			for ( unsigned short i = 0; i < CHUNKSIZE; i++ ) // Iterate Y
 				cubes[i][j][k] = 0;
 
-	for ( unsigned short j = 0; j < CHUNKSIZE; j++ )																						  // Iterate Z
-		for ( unsigned short k = 0; k < CHUNKSIZE; k++ )																					  // Iterate X
-			for ( unsigned short i = 0; i < (unsigned short)( (float)CHUNKSIZE * noise[pos_j * CHUNKSIZE + j][pos_k * CHUNKSIZE + k] ); i++ ) // Iterate Y
-				cubes[i][j][k] = value;
+	for ( unsigned short j = 0; j < CHUNKSIZE; j++ )		 // Iterate Z
+		for ( unsigned short k = 0; k < CHUNKSIZE; k++ )	 // Iterate X
+			for ( unsigned short i = 0; i < CHUNKSIZE; i++ ) // Iterate Y
+			{
+				if ( i < (unsigned short)( (float)( CHUNKSIZE - 1 ) * world.GetNoise( pos_j * CHUNKSIZE + j, pos_k * CHUNKSIZE + k ) ) + 1 )
+					cubes[i][j][k] = ( ( rand() % 10 ) < 5 ) ? 1 : 2;
+				else
+					cubes[i][j][k] = 0;
+			}
 }

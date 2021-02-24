@@ -90,7 +90,7 @@ int main()
 	glGetIntegerv( GL_MAX_VERTEX_ATTRIBS, &attrAmt );
 	std::cout << "Max number of vertex attributes supported: " << attrAmt << std::endl;
 
-	Shader shader( "./src/Shaders/VertexShader.GLSL", "./src/Shaders/FragmentShader.GLSL" );
+	Shader shader( "./src/Shaders/VertexShader.glsl", "./src/Shaders/FragmentShader.glsl" );
 
 	/// Create and establish the data of the VAO, EBO, and the VBO
 	VertexArrayObject  VAO = VertexArrayObject();

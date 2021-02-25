@@ -7,6 +7,7 @@ private:
 	unsigned int ID;
 
 public:
+	EntityBufferObject();
 	EntityBufferObject( GLsizeiptr size, const void* data, GLenum usage );
 	~EntityBufferObject();
 };

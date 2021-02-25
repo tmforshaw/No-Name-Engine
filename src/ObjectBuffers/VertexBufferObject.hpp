@@ -7,6 +7,7 @@ private:
 	unsigned int ID;
 
 public:
+	VertexBufferObject();
 	VertexBufferObject( GLsizeiptr size, const void* data, GLenum usage );
 	~VertexBufferObject();
 

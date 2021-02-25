@@ -93,9 +93,9 @@ int main()
 	Shader shader( "./src/Shaders/VertexShader.glsl", "./src/Shaders/FragmentShader.glsl" );
 
 	/// Create and establish the data of the VAO, EBO, and the VBO
-	VertexArrayObject  VAO = VertexArrayObject();
-	EntityBufferObject EBO = EntityBufferObject( sizeof( Cube::indices ), Cube::indices, GL_STATIC_DRAW );
-	VertexBufferObject VBO = VertexBufferObject( sizeof( Cube::vertices ), Cube::vertices, GL_STATIC_DRAW );
+	VertexArrayObject VAO = VertexArrayObject();
+	// EntityBufferObject EBO = EntityBufferObject();
+	VertexBufferObject VBO = VertexBufferObject();
 
 	// Instantiate the textures array
 	TextureAtlas textureAtlas( "src/Textures/TextureSheet.jpeg" );

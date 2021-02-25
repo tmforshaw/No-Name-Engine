@@ -23,24 +23,24 @@ constexpr std::initializer_list<Face> FaceItr = { Face::FRONT, Face::BACK, Face:
 namespace Cube
 {
 	// clang-format off
-	// The unique vertices of the shape
-	static float vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // 0 -0
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, // 1 -1
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // 2 -2
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // 3 -3
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // 4 -0
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // 5 -1
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, // 6 -2
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f, // 7 -3
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // 13 -0
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // 8 -1
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // 9 -2
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // 10 -3
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f, // 15 -0
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // 11 -1
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f, // 14 -2
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f  // 12 -3
+	// The unique vertex positions of the shape
+	static float vertexPositions[] = {
+		-0.5f, -0.5f, -0.5f, // 0 -0
+		 0.5f, -0.5f, -0.5f, // 1 -1
+		 0.5f,  0.5f, -0.5f, // 2 -2
+		-0.5f,  0.5f, -0.5f, // 3 -3
+		-0.5f, -0.5f,  0.5f, // 4 -0
+		 0.5f, -0.5f,  0.5f, // 5 -1
+		 0.5f,  0.5f,  0.5f, // 6 -2
+		-0.5f,  0.5f,  0.5f, // 7 -3
+		 0.5f, -0.5f,  0.5f, // 8 -0
+		-0.5f,  0.5f,  0.5f, // 9 -1
+		-0.5f,  0.5f, -0.5f, // 10 -2
+		-0.5f, -0.5f, -0.5f, // 11 -3
+		-0.5f,  0.5f,  0.5f, // 12 -0
+		 0.5f,  0.5f,  0.5f, // 13 -1
+		 0.5f, -0.5f, -0.5f, // 14 -2
+		 0.5f, -0.5f, -0.5f  // 15 -3
 	};
 	// clang-format on
 
@@ -57,6 +57,6 @@ namespace Cube
 	void GetFace( Face face, float ( &array )[5 * 6] );
 
 	void PushFace( std::vector<float> *vector, const Face &face );
-	void PushFaceWithMatrix( std::vector<float> *vector, TextureAtlas texSheet, unsigned short type, const Face &face, glm::mat4 model );
+	void PushFaceWithMatrix( std::vector<float> *vector, TextureAtlas texSheet, unsigned short blockID, const Face &face, glm::mat4 model );
 
 } // namespace Cube

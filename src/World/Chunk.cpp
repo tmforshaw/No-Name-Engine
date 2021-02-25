@@ -54,9 +54,7 @@ bool Chunk::IsDrawn() const
 void Chunk::GenerateMesh( TextureAtlas texSheet )
 {
 	// Reset the mesh and texture
-	mesh	   = {};
-	textures   = {};
-	textureIDs = {};
+	mesh = {};
 
 	for ( unsigned short i = 0; i < CHUNKSIZE; i++ )		 // Iterate Y
 		for ( unsigned short j = 0; j < CHUNKSIZE; j++ )	 // Iterate Z
@@ -65,43 +63,15 @@ void Chunk::GenerateMesh( TextureAtlas texSheet )
 				if ( cubes[i][j][k] != 0 )						  // Is a block
 					for ( auto& face : FaceItr )				  // Iterate through Face enum
 						if ( GetNeighbour( i, j, k, face ) == 0 ) // Neighbour isn't a block
-						{
-							// std::vector<unsigned short> faceTexIDs;
 							Cube::PushFaceWithMatrix( &mesh, texSheet, cubes[i][j][k], face, glm::translate( glm::mat4( 1.0f ), GetPosition( i, j, k ) ) );
-							// textures.push_back( cubes[i][j][k] );
-
-							// // Push faceTexIDs onto textureIDs
-							// for ( auto& textureID : faceTexIDs )
-							// 	textureIDs.push_back( textureID );
-						}
 			}
 
 	generated = true;
 }
 
-// float coords[] = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f };
-
 void Chunk::DrawMesh( VertexBufferObject* VBO )
 {
 	VBO->SetData( mesh.size() * sizeof( float ), mesh.data(), GL_STATIC_DRAW );
-
-	// tex.Bind();
-	// shader.SetInt( "sampler1", 0 );
-
-	// for ( unsigned short i = 0; i < mesh.size() / CUBEFACESIZE; i++ ) // Use 6 because thats the number of vertices positions in a face
-	// {
-	// float texCoordArray[8];
-	// tex.GetTexPos( textures[i / CUBEFACESIZE], texCoordArray );
-	// tex.Bind();
-
-	// std::cout << textureIDs[i / ( CUBEFACESIZE * 0.5f )] << std::endl;
-
-	// std::cout << textureIDs[i / ( CUBEFACESIZE / 2 )] << ": " << coords[textureIDs[i / ( CUBEFACESIZE / 2 )]] << "   " << coords[textureIDs[i / ( CUBEFACESIZE / 2 )] + 1] << std::endl;
-
-	// shader.SetFloat2( "texCoord", coords[textureIDs[i / ( CUBEFACESIZE / 2 )]], coords[textureIDs[i / ( CUBEFACESIZE / 2 )] + 1] );
-
-	// glDrawArrays( GL_TRIANGLES, i * CUBEFACESIZE, CUBEFACESIZE );
-	// }
 
 	glDrawArrays( GL_TRIANGLES, 0, mesh.size() );
 
@@ -251,7 +221,7 @@ void Chunk::GenerateBlocks()
 			for ( unsigned short i = 0; i < CHUNKSIZE; i++ ) // Iterate Y
 			{
 				if ( i < (unsigned short)( (float)( CHUNKSIZE - 1 ) * world.GetNoise( pos_j * CHUNKSIZE + j, pos_k * CHUNKSIZE + k ) ) + 1 )
-					cubes[i][j][k] = ( ( rand() % 10 ) < 5 ) ? 1 : 2;
+					cubes[i][j][k] = ( ( rand() % 10 ) < 5 ) ? 1 : 2; // Randomly set the block to 1 or 2
 				else
 					cubes[i][j][k] = 0;
 			}

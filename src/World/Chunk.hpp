@@ -15,11 +15,9 @@
 class Chunk
 {
 private:
-	unsigned short				pos_i, pos_j, pos_k;
-	unsigned short				cubes[CHUNKSIZE][CHUNKSIZE][CHUNKSIZE];
-	std::vector<float>			mesh;
-	std::vector<unsigned short> textures;
-	std::vector<unsigned short> textureIDs;
+	unsigned short	   pos_i, pos_j, pos_k;
+	unsigned short	   cubes[CHUNKSIZE][CHUNKSIZE][CHUNKSIZE];
+	std::vector<float> mesh;
 
 	bool drawn;
 	bool generated;

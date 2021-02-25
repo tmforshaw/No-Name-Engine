@@ -1,5 +1,12 @@
 #include "EntityBufferObject.hpp"
 
+EntityBufferObject::EntityBufferObject()
+{
+	// Generate and bind the buffer
+	glGenBuffers( 1, &ID );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ID );
+}
+
 EntityBufferObject::EntityBufferObject( GLsizeiptr size, const void* data, GLenum usage )
 {
 	// Generate and bind the buffer

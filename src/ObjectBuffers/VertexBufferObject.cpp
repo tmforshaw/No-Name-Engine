@@ -2,6 +2,12 @@
 
 #include "../Constants.hpp"
 
+VertexBufferObject::VertexBufferObject()
+{
+	// Generate the buffer
+	glGenBuffers( 1, &ID );
+}
+
 VertexBufferObject::VertexBufferObject( GLsizeiptr size, const void* data, GLenum usage )
 {
 	// Generate the buffer

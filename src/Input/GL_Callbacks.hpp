@@ -18,19 +18,26 @@ void ResizeViewportCallback( GLFWwindow* window, int n_width, int n_height )
 
 void KeyboardCallback( GLFWwindow* window, int key, int scancode, int action, int mods )
 {
-	// When escape is pressed, close the window
+	// Escape Key
 	if ( key == Key::ESC )
 		if ( action == GLFW_PRESS )
 			kb.Set( Key::ESC, true );
 		else if ( action == GLFW_RELEASE )
 			kb.Set( Key::ESC, false );
 
-	// For fast movement
+	// Left Shift
 	if ( key == Key::L_SHIFT )
 		if ( action == GLFW_PRESS )
 			kb.Set( Key::L_SHIFT, true );
 		else if ( action == GLFW_RELEASE )
 			kb.Set( Key::L_SHIFT, false );
+
+	// F1 Key
+	if ( key == Key::F1 )
+		if ( action == GLFW_PRESS )
+			kb.Set( Key::F1, true );
+		else if ( action == GLFW_RELEASE )
+			kb.Set( Key::F1, false );
 
 	// Camera movement
 

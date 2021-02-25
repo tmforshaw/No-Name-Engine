@@ -5,6 +5,7 @@
 // clang-format on
 
 #include <bitset>
+#include <iostream>
 
 #include "../Camera/Camera.hpp"
 enum Key : short // Enum to hold different key presses (Stored as GLFW keys)
@@ -67,6 +68,10 @@ enum Key : short // Enum to hold different key presses (Stored as GLFW keys)
 	F12 = GLFW_KEY_F12
 };
 
+static double		fpsCount	= 0;
+static bool			countingFPS = false;
+static unsigned int frameCount	= 0;
+
 class KeyboardHandler
 {
 private:
@@ -95,6 +100,25 @@ public:
 		}
 		else if ( cam.movingFast ) // Check if it's marked as moving fast but key isn't pressed
 			cam.movingFast = false;
+
+		// Display the fps
+		if ( keyMap[Key::F1] )
+		{
+			fpsCount += deltaT;
+			frameCount++;
+
+			if ( !countingFPS )
+				countingFPS = true;
+		}
+		else if ( countingFPS )
+		{
+			countingFPS = false;
+			std::cout << std::endl;
+			std::cout << "Averaged " << frameCount / fpsCount << " FPS over " << frameCount << " frames" << std::endl;
+
+			frameCount = 0;
+			fpsCount   = 0;
+		}
 
 		// Camera movement
 		if ( keyMap[Key::W] )

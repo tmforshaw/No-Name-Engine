@@ -1,11 +1,11 @@
 #include "PerlinNoise.hpp"
 
-#include <glad/glad.h>
+// #include <glad/glad.h>
 #include <random>
 
 static float noiseSeed[NOISE_SIZE_Y][NOISE_SIZE_X];
 
-void SeedNoise( unsigned int seed )
+void SeedNoise( const unsigned short& seed )
 {
 	// Seed the random numbers
 	srand( seed );
@@ -15,7 +15,7 @@ void SeedNoise( unsigned int seed )
 			noiseSeed[i][j] = (float)rand() / (float)RAND_MAX; // Normalise it
 }
 
-void PerlinNoise2D( unsigned int seed, unsigned short octaveNum, float ( &outArray )[NOISE_SIZE_Y][NOISE_SIZE_Y], float fBias )
+void PerlinNoise2D( const unsigned short& seed, const unsigned short& octaveNum, float ( &outArray )[NOISE_SIZE_Y][NOISE_SIZE_Y], const float& fBias )
 {
 	SeedNoise( seed );
 

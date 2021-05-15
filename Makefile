@@ -1,10 +1,10 @@
 
 # This is messy as fuck and it's mostly because I have to include glad.c but also because I am bad with Makefiles
 
-PROJECTNAME = NoNameEngine
+PROJECTNAME = Refactor
 
 CC = g++
-CFLAGS = -std=c++2a
+CFLAGS = -std=c++2a -Wno-int-to-pointer-cast
 LINKFLAGS = -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
 
 BUILDDIR := bin
@@ -15,8 +15,11 @@ DEPENDDIR := dependencies
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
 SRC = $(call rwildcard,$(SRCDIR),*.cpp)
-OBJS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SRC))
-OBJS += $(OBJDIR)/glad.o
+DEPENDSRC := $(call rwildcard,$(DEPENDDIR),*.cpp)
+DEPENDSRC += $(call rwildcard,$(DEPENDDIR),*.c)
+
+OBJS := $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SRC)) # SRC objects
+OBJS += $(patsubst $(DEPENDDIR)/%.cpp, $(OBJDIR)/$(DEPENDDIR)/%.o,$(patsubst $(DEPENDDIR)/%.c, $(OBJDIR)/$(DEPENDDIR)/%.o, $(DEPENDSRC))) # Dependency objects
 
 # Build the project
 .PHONY: build
@@ -35,6 +38,19 @@ setup:
 clean:
 	@echo !-- Cleaning Folders --!
 	@rm -rf $(BUILDDIR)/*
+
+	@mkdir -p temp
+	@cp -r $(OBJDIR)/$(DEPENDDIR) temp
+	@rm -rf $(OBJDIR)/*
+	
+	@cp -r temp/$(DEPENDDIR) $(OBJDIR)
+	@rm -r temp
+
+# Remove unneeded files and dependency objects
+.PHONY: full-clean
+full-clean:
+	@echo !-- Cleaning Folders - Including Dependencies --!
+	@rm -rf $(BUILDDIR)/*
 	@rm -rf $(OBJDIR)/*
 
 # Compile the individual cpp files
@@ -43,9 +59,16 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(@D)
 	@$(CC) -c $^ -o $@ $(CFLAGS)
 
-# Compile the individual c files
-$(OBJDIR)/%.o: $(DEPENDDIR)/%.c
+# Compile the individual dependency c files
+$(OBJDIR)/$(DEPENDDIR)/%.o: $(DEPENDDIR)/%.c
 	@echo !-- Compiling $^ --!
+	@mkdir -p $(@D)
+	@$(CC) -c $^ -o $@ $(CFLAGS)
+
+# Compile the individual dependency cpp files
+$(OBJDIR)/$(DEPENDDIR)/%.o: $(DEPENDDIR)/%.cpp
+	@echo !-- Compiling $^ --!
+	@mkdir -p $(@D)
 	@$(CC) -c $^ -o $@ $(CFLAGS)
 
 # Link the files together

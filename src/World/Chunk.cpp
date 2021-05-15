@@ -1,145 +1,80 @@
 #include "Chunk.hpp"
 
-#include "../Camera/Projections.hpp"
-#include "../Noise/PerlinNoise.hpp"
+#include "../Renderer/Renderer.hpp"
 #include "World.hpp"
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <iostream>
+Chunk::Chunk() : m_posX( 0 ), m_posY( 0 ), m_posZ( 0 ) {}
 
-Chunk::Chunk()
+Chunk::Chunk( const unsigned short& p_posX, const unsigned short& p_posY, const unsigned short& p_posZ )
+	: m_posX( p_posX ), m_posY( p_posY ), m_posZ( p_posZ )
 {
-	// Set its ID values
-	pos_i = 0, pos_j = 0, pos_k = 0;
-
-	// Initialise chunks
-	unsigned short cubes[CHUNKSIZE][CHUNKSIZE][CHUNKSIZE] = {};
-
-	// Set it as undrawn and ungenerated
-	drawn	  = false;
-	generated = false;
-}
-
-Chunk::Chunk( unsigned short p_i, unsigned short p_j, unsigned short p_k )
-{
-	// Set its ID values
-	pos_i = p_i, pos_j = p_j, pos_k = p_k;
-
-	// Initialise chunks
-	unsigned short cubes[CHUNKSIZE][CHUNKSIZE][CHUNKSIZE] = {};
-
-	// Set it as undrawn and ungenerated
-	drawn	  = false;
-	generated = false;
-
-	// Generate the blocks
-	GenerateBlocks();
-}
-
-glm::vec3 Chunk::GetPosition( unsigned short i, unsigned short j, unsigned short k ) const
-{
-	return glm::vec3( k + pos_k * CHUNKSIZE, i + pos_i * CHUNKSIZE, j + pos_j * CHUNKSIZE );
-}
-
-bool Chunk::IsGenerated() const
-{
-	return generated;
-}
-
-bool Chunk::IsDrawn() const
-{
-	return drawn;
-}
-
-void Chunk::GenerateMesh( TextureAtlas texSheet )
-{
-	// Reset the mesh and texture
-	mesh = {};
-
-	for ( unsigned short i = 0; i < CHUNKSIZE; i++ )		 // Iterate Y
-		for ( unsigned short j = 0; j < CHUNKSIZE; j++ )	 // Iterate Z
-			for ( unsigned short k = 0; k < CHUNKSIZE; k++ ) // Iterate X
+	for ( unsigned short y = 0; y < CHUNK_SIZE; y++ )		  // Iterate Y
+		for ( unsigned short z = 0; z < CHUNK_SIZE; z++ )	  // Iterate Z
+			for ( unsigned short x = 0; x < CHUNK_SIZE; x++ ) // Iterate X
 			{
-				if ( cubes[i][j][k] != 0 )						  // Is a block
-					for ( auto& face : FaceItr )				  // Iterate through Face enum
-						if ( GetNeighbour( i, j, k, face ) == 0 ) // Neighbour isn't a block
-							Cube::PushFaceWithMatrix( &mesh, texSheet, cubes[i][j][k], face, glm::translate( glm::mat4( 1.0f ), GetPosition( i, j, k ) ) );
+				m_cubes[y][z][x] = 1;
 			}
 
-	generated = true;
+	GenerateMesh();
 }
 
-void Chunk::DrawMesh( VertexBufferObject* VBO )
+unsigned short Chunk::GetNeighbourChunkBlock( const unsigned short& x, const unsigned short& y, const unsigned short& z, const Face& face ) const
 {
-	VBO->SetData( mesh.size() * sizeof( float ), mesh.data(), GL_STATIC_DRAW );
-
-	glDrawArrays( GL_TRIANGLES, 0, mesh.size() );
-
-	if ( !drawn ) drawn = true;
-}
-
-unsigned short Chunk::GetCube( unsigned short i, unsigned short j, unsigned short k ) const
-{
-	return cubes[i][j][k];
-}
-
-unsigned short Chunk::GetNeighbourChunkBlock( unsigned short i, unsigned short j, unsigned short k, Face face ) const
-{
-	unsigned short new_i = i, new_j = j, new_k = k;
-	unsigned short chunk_i = pos_i, chunk_j = pos_j, chunk_k = pos_k;
+	unsigned short new_x = x, new_y = y, new_z = z;
+	unsigned short chunk_x = m_posX, chunk_y = m_posY, chunk_z = m_posZ;
 
 	switch ( face )
 	{
 	case Face::FRONT:
-		new_j = CHUNKSIZE - 1;
+		new_z = CHUNK_SIZE - 1;
 
-		if ( pos_j > 0 )
-			chunk_j--;
+		if ( m_posZ > 0 )
+			chunk_z--;
 		else
 			return 0; // Return 0 because this is the last chunk
 		break;
 
 	case Face::BACK:
-		new_j = 0;
+		new_z = 0;
 
-		if ( pos_j < CHUNKS_Z - 1 )
-			chunk_j++;
+		if ( m_posZ < CHUNKS_Z - 1 )
+			chunk_z++;
 		else
 			return 0; // Return 0 because this is the last chunk
 		break;
 
 	case Face::RIGHT:
-		new_k = CHUNKSIZE - 1;
+		new_x = CHUNK_SIZE - 1;
 
-		if ( pos_k > 0 )
-			chunk_k--;
+		if ( m_posX > 0 )
+			chunk_x--;
 		else
 			return 0; // Return 0 because this is the last chunk
 		break;
 
 	case Face::LEFT:
-		new_k = 0;
+		new_x = 0;
 
-		if ( pos_k < CHUNKS_X - 1 )
-			chunk_k++;
+		if ( m_posX < CHUNKS_X - 1 )
+			chunk_x++;
 		else
 			return 0; // Return 0 because this is the last chunk
 		break;
 
 	case Face::BOTTOM:
-		new_i = CHUNKSIZE - 1;
+		new_y = CHUNK_SIZE - 1;
 
-		if ( pos_i > 0 )
-			chunk_i--;
+		if ( m_posY > 0 )
+			chunk_y--;
 		else
 			return 0; // Return 0 because this is the last chunk
 		break;
 
 	case Face::TOP:
-		new_i = 0;
+		new_y = 0;
 
-		if ( pos_i < CHUNKS_Y - 1 )
-			chunk_i++;
+		if ( m_posY < CHUNKS_Y - 1 )
+			chunk_y++;
 		else
 			return 0; // Return 0 because this is the last chunk
 		break;
@@ -149,49 +84,47 @@ unsigned short Chunk::GetNeighbourChunkBlock( unsigned short i, unsigned short j
 		break;
 	}
 
-	unsigned short test = world.GetChunk( chunk_i, chunk_j, chunk_k ).GetCube( new_i, new_j, new_k );
-
-	return test;
+	return World::GetChunk( chunk_x, chunk_y, chunk_z ).GetCube( new_x, new_y, new_z );
 }
 
-unsigned short Chunk::GetNeighbour( unsigned short i, unsigned short j, unsigned short k, Face face ) const
+unsigned short Chunk::GetNeighbour( const unsigned short& x, const unsigned short& y, const unsigned short& z, const Face& face ) const
 {
-	unsigned short new_i = i, new_j = j, new_k = k;
+	unsigned short new_x = x, new_y = y, new_z = z;
 
 	switch ( face )
 	{
 	case Face::FRONT:
-		if ( j > 0 ) new_j--;
+		if ( z > 0 ) new_z--;
 		else
 			goto outsideChunk;
 		break;
 
 	case Face::BACK:
-		if ( j < CHUNKSIZE - 1 ) new_j++;
-		else
-			goto outsideChunk;
-		break;
-
-	case Face::RIGHT:
-		if ( k > 0 ) new_k--;
+		if ( z < CHUNK_SIZE - 1 ) new_z++;
 		else
 			goto outsideChunk;
 		break;
 
 	case Face::LEFT:
-		if ( k < CHUNKSIZE - 1 ) new_k++;
+		if ( x > 0 ) new_x--;
+		else
+			goto outsideChunk;
+		break;
+
+	case Face::RIGHT:
+		if ( x < CHUNK_SIZE - 1 ) new_x++;
 		else
 			goto outsideChunk;
 		break;
 
 	case Face::BOTTOM:
-		if ( i > 0 ) new_i--;
+		if ( y > 0 ) new_y--;
 		else
 			goto outsideChunk;
 		break;
 
 	case Face::TOP:
-		if ( i < CHUNKSIZE - 1 ) new_i++;
+		if ( y < CHUNK_SIZE - 1 ) new_y++;
 		else
 			goto outsideChunk;
 		break;
@@ -201,28 +134,56 @@ unsigned short Chunk::GetNeighbour( unsigned short i, unsigned short j, unsigned
 		break;
 	}
 
-	return cubes[new_i][new_j][new_k];
+	return m_cubes[new_y][new_z][new_x];
 
 outsideChunk:
 
-	return GetNeighbourChunkBlock( i, j, k, face ); // Index is outside of chunk, check the neighbouring chunk
+	return GetNeighbourChunkBlock( x, y, z, face ); // Index is outside of chunk, check the neighbouring chunk
 }
 
-void Chunk::GenerateBlocks()
+void Chunk::GenerateMesh()
 {
-	// Reset chunk
-	for ( unsigned short j = 0; j < CHUNKSIZE; j++ )		 // Iterate Z
-		for ( unsigned short k = 0; k < CHUNKSIZE; k++ )	 // Iterate X
-			for ( unsigned short i = 0; i < CHUNKSIZE; i++ ) // Iterate Y
-				cubes[i][j][k] = 0;
+	// Reset the mesh and indices
+	m_mesh	  = {};
+	m_indices = {};
 
-	for ( unsigned short j = 0; j < CHUNKSIZE; j++ )		 // Iterate Z
-		for ( unsigned short k = 0; k < CHUNKSIZE; k++ )	 // Iterate X
-			for ( unsigned short i = 0; i < CHUNKSIZE; i++ ) // Iterate Y
+	unsigned short total = 0;
+
+	// Add the cube faces depending on neighbours
+	for ( unsigned short y = 0; y < CHUNK_SIZE; y++ )		  // Iterate Y
+		for ( unsigned short z = 0; z < CHUNK_SIZE; z++ )	  // Iterate Z
+			for ( unsigned short x = 0; x < CHUNK_SIZE; x++ ) // Iterate X
 			{
-				if ( i < (unsigned short)( (float)( CHUNKSIZE - 1 ) * world.GetNoise( pos_j * CHUNKSIZE + j, pos_k * CHUNKSIZE + k ) ) + 1 )
-					cubes[i][j][k] = ( ( rand() % 10 ) < 5 ) ? 1 : 2; // Randomly set the block to 1 or 2
-				else
-					cubes[i][j][k] = 0;
+				if ( m_cubes[y][z][x] > 0 )						  // Is a block
+					for ( auto& face : faceItr )				  // Iterate through Face enum
+						if ( GetNeighbour( x, y, z, face ) == 0 ) // Neighbour isn't a block
+							Cube::PushFaceWithMatrix( &m_mesh, &m_indices, m_cubes[y][z][x], face, glm::translate( glm::mat4( 1.0f ), GetPosition( x, y, z ) ) );
 			}
+
+	// // Set the buffers
+	// m_vertexBuffer.SetData( m_mesh.data(), m_mesh.size() * sizeof( Vertex ) );
+	// m_indexBuffer.SetData( m_indices.data(), m_indices.size() );
+}
+
+void Chunk::DrawMesh( const VertexArray& p_VAO, const ShaderProgram& shader ) const
+{
+	// p_VAO.Bind();
+	// m_vertexBuffer.Bind();
+
+	// Renderer::Draw( p_VAO, m_indexBuffer, shader );
+}
+
+void Chunk::PushVertices( std::vector<Vertex>* p_vertices, std::vector<unsigned int>* p_indices )
+{
+	// GenerateMesh();
+
+	for ( const auto& vert : m_mesh ) // Iterate each vertex of the mesh
+		p_vertices->push_back( vert );
+
+	// std::cout << "Vertices: " << p_vertices->size() / 4 << std::endl;
+
+	for ( const auto& index : m_indices ) // Iterate each index of the indices
+		p_indices->push_back( index );
+
+	// std::cout << "Indices: " << p_indices->size() / 6 << std::endl;
 }

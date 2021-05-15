@@ -1,61 +1,98 @@
 #include "Cube.hpp"
 
-#include "../Constants.hpp"
+#include "Blocks/Blocks.hpp"
 
-namespace Cube
+#include <iostream>
+
+// Create an array of the arrays of vertices
+const static float cubeVertices[][5 * 4] {
+
+	// Front face
+	{ -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+	  -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+	  0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+	  0.5f, -0.5f, -0.5f, 1.0f, 0.0f },
+
+	// Back face
+	{ -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+	  0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+	  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+	  -0.5f, 0.5f, 0.5f, 0.0f, 1.0f },
+
+	// Left face
+	{ -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+	  -0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+	  -0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+	  -0.5f, 0.5f, -0.5f, 0.0f, 1.0f },
+
+	// Right face
+	{ 0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+	  0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+	  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+	  0.5f, -0.5f, 0.5f, 1.0f, 0.0f },
+
+	// Top face
+	{ -0.5f, 0.5f, -0.5f, 0.0f, 0.0f,
+	  -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+	  0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+	  0.5f, 0.5f, -0.5f, 1.0f, 0.0f },
+
+	// Bottom face
+	{ -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+	  0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+	  0.5f, -0.5f, 0.5f, 1.0f, 1.0f,
+	  -0.5f, -0.5f, 0.5f, 0.0f, 1.0f }
+};
+
+const static unsigned short faceIndices[]	 = { 0, 1, 2, 2, 3, 0 };
+constexpr unsigned short	faceVerticesSize = sizeof( cubeVertices[0] );
+
+Cube::Cube( const unsigned short& p_blockID )
+	: m_blockID( p_blockID )
 {
-	void GetFace( Face face, float ( &array )[VERTEX_POSITION_SIZE * CUBEFACESIZE] )
+	// Initialise the texture IDs
+	for ( unsigned short i = 0; i < FACE_COUNT; i++ )
 	{
-		// Add all the vertices of the face to the array
-		for ( unsigned short i = 0; i < CUBEFACESIZE; i++ )				// Iterate indices
-			for ( unsigned short j = 0; j < VERTEX_POSITION_SIZE; j++ ) // Iterate through all the vertex floats
-				array[i * VERTEX_POSITION_SIZE + j] = vertexPositions[indices[(short)face * CUBEFACESIZE + i] * 5 + j];
+		if ( i % 2 == 0 )
+			m_textureIDs[i] = m_blockID;
+		else
+			m_textureIDs[i] = 2;
 	}
+}
 
-	void PushFace( std::vector<float> *vector, TextureAtlas texSheet, unsigned short blockID, const Face &face )
+void Cube::PushFaceWithMatrix( std::vector<Vertex>* p_vertices, std::vector<unsigned int>* p_indices, const unsigned short& p_blockID, const Face& face, const glm::mat4& matrix )
+{
+	unsigned short finalIndexOfVertices = p_vertices->size(); // Get how many vertices are already in p_vertices
+
+	for ( const auto& index : faceIndices )					  // Iterate through the indices
+		p_indices->push_back( index + finalIndexOfVertices ); // Add the offset of finalIndexOfVertices
+
+	// Add each vertex to the vertices vector
+	Vertex vert;
+
+	for ( unsigned short i = 0; i < 4; i++ ) // Iterate each vertex of the vertices vector
 	{
-		// Add all the vertices of the face to the vector
-		for ( unsigned short i = 0; i < CUBEFACESIZE; i++ ) // Iterate indices
+		vert = {};
+
+		for ( unsigned short j = 0; j < 6; j++ ) // Iterate each element (and one more)
 		{
-			for ( unsigned short j = 0; j < VERTEX_POSITION_SIZE; j++ ) // Iterate through all the vertex floats
-				vector->push_back( vertexPositions[indices[(short)face * CUBEFACESIZE + i] * VERTEX_POSITION_SIZE + j] );
-
-			float texCoordArray[8];
-			texSheet.GetTexturePos( blockID - 1, texCoordArray );
-
-			unsigned short texCoordType = indices[(short)face * CUBEFACESIZE + i] % 4;
-
-			// Push the coordinates
-			vector->push_back( texCoordArray[texCoordType * 2] );
-			vector->push_back( texCoordArray[texCoordType * 2 + 1] );
+			if ( j < 3 )															// Adding positions
+				vert.m_position[j] = cubeVertices[(unsigned short)face][i * 5 + j]; // Add the element from vertices to the vertices vector
+			else if ( j < 5 )														// Adding uvCoords
+				vert.m_uvCoords[j - 3] = cubeVertices[(unsigned short)face][i * 5 + j];
+			else
+				vert.m_ID = GetTexture( p_blockID, face ); // Add the correct face texture
 		}
+
+		// Calculate the position with the matrix transformation
+		glm::vec4 transformedPosition = matrix * glm::vec4( vert.m_position[0], vert.m_position[1], vert.m_position[2], 1.0f );
+
+		// Set the values inside the vertex
+		vert.m_position[0] = transformedPosition.x;
+		vert.m_position[1] = transformedPosition.y;
+		vert.m_position[2] = transformedPosition.z;
+
+		// Add the vertex to the vertices vector
+		p_vertices->push_back( vert );
 	}
-
-	void PushFaceWithMatrix( std::vector<float> *vector, TextureAtlas texSheet, unsigned short blockID, const Face &face, glm::mat4 model )
-	{
-		for ( unsigned short i = 0; i < CUBEFACESIZE; i++ ) // Iterate indices
-		{
-			std::vector<float> position = {}, texCoords = {};
-
-			for ( unsigned short j = 0; j < VERTEX_POSITION_SIZE; j++ ) // Iterate through all the vertex floats
-				position.push_back( vertexPositions[indices[(short)face * CUBEFACESIZE + i] * VERTEX_POSITION_SIZE + j] );
-
-			glm::vec4 projectedPosition = model * glm::vec4( position[0], position[1], position[2], 1.0f );
-
-			// Add the point to the vector
-			vector->push_back( projectedPosition.x );
-			vector->push_back( projectedPosition.y );
-			vector->push_back( projectedPosition.z );
-
-			float texCoordArray[8];
-			texSheet.GetTexturePos( blockID - 1, texCoordArray );
-
-			unsigned short texCoordType = indices[(short)face * CUBEFACESIZE + i] % 4;
-
-			// Push the coordinates
-			vector->push_back( texCoordArray[texCoordType * 2] );
-			vector->push_back( texCoordArray[texCoordType * 2 + 1] );
-		}
-	}
-
-} // namespace Cube
+}

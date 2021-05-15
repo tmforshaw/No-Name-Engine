@@ -1,33 +1,21 @@
 #pragma once
-#include "../Noise/PerlinNoise.hpp"
-#include "../Textures/Textures.hpp"
+#include "../Shader/Shader.hpp"
 #include "Chunk.hpp"
-#include "Cube.hpp"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#define CHUNKS_X 20
+#define CHUNKS_X 1
 #define CHUNKS_Y 1
-#define CHUNKS_Z 20
+#define CHUNKS_Z 1
 
 class World
 {
 private:
-	Chunk chunks[CHUNKS_Y][CHUNKS_Z][CHUNKS_X];
-	float noise[NOISE_SIZE_Y][NOISE_SIZE_X];
+	static Chunk m_chunks[CHUNKS_Y][CHUNKS_Z][CHUNKS_X];
 
 public:
-	World( unsigned int seed );
+	static void				   Init();
+	inline static const Chunk& GetChunk( const unsigned short& x, const unsigned short& y, const unsigned short& z ) { return m_chunks[y][z][x]; }
 
-	Chunk GetChunk( unsigned short i, unsigned short j, unsigned short k ) const;
-	float GetNoise( unsigned short j, unsigned short k );
+	static void DrawChunks( const VertexArray& p_VAO, const ShaderProgram& shader );
 
-	void DrawChunks( VertexBufferObject* VBO );
-	void GenerateChunkMesh( unsigned int i, unsigned int j, unsigned int k, TextureAtlas texSheet );
-	void GenerateChunkMeshes( glm::vec3 position, TextureAtlas texSheet );
+	static void PushChunkVertices( std::vector<Vertex>* p_vertices, std::vector<unsigned int>* p_indices );
 };
-
-extern World world;
-
-void InitWorld( unsigned int seed );

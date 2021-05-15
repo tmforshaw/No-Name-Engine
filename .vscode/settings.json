@@ -1,11 +1,10 @@
 {
     "files.associations": {
-        "random": "cpp",
+        "stdexcept": "cpp",
         "array": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
         "*.tcc": "cpp",
-        "bitset": "cpp",
         "cctype": "cpp",
         "clocale": "cpp",
         "cmath": "cpp",
@@ -14,7 +13,6 @@
         "cstdint": "cpp",
         "cstdio": "cpp",
         "cstdlib": "cpp",
-        "cstring": "cpp",
         "cwchar": "cpp",
         "cwctype": "cpp",
         "deque": "cpp",
@@ -28,6 +26,7 @@
         "memory_resource": "cpp",
         "numeric": "cpp",
         "optional": "cpp",
+        "random": "cpp",
         "string": "cpp",
         "string_view": "cpp",
         "system_error": "cpp",
@@ -43,9 +42,13 @@
         "new": "cpp",
         "ostream": "cpp",
         "sstream": "cpp",
-        "stdexcept": "cpp",
         "streambuf": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
-    }
+        "typeinfo": "cpp",
+        "cstring": "cpp",
+        "bitset": "cpp"
+    },
+    "C_Cpp.default.includePath": [
+        "dependencies/"
+    ]
 }

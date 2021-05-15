@@ -12,109 +12,129 @@
 #define minFOV 1.0f
 #define maxFOV 75.0f
 
-// Instantiate the camera
-Camera cam( { 0.0f, 20.0f, 0.0f } );
+// Initialise all the camera variables
 
-Camera::Camera( glm::vec3 pos, glm::vec2 rot )
-	: mouseSensitivity( mouseSens ), moveSpeed( mSpeed ), moveSpeedFast( mSpeedFast ), worldUp( glm::vec3( 0.0f, 1.0f, 0.0f ) ), zoomSensitivity( zoomSens ), fov( fovDefault ), movingFast( false )
+// Movement
+float	  Camera::m_moveSpeed	  = mSpeed;
+float	  Camera::m_moveSpeedFast = mSpeedFast;
+bool	  Camera::m_movingFast	  = false;
+glm::vec2 Camera::m_rotation;
+glm::vec3 Camera::m_position;
+
+// Mouse
+float Camera::m_zoomSensitivity	 = zoomSens;
+float Camera::m_fov				 = fovDefault;
+float Camera::m_mouseSensitivity = mouseSens;
+
+// Axes
+glm::vec3 Camera::m_worldUp = glm::vec3( 0.0f, 1.0f, 0.0f );
+glm::vec3 Camera::m_zDirection;
+glm::vec3 Camera::m_xDirection;
+glm::vec3 Camera::m_yDirection;
+
+// View projection
+glm::mat4 Camera::m_view;
+
+void Camera::Instantiate( const glm::vec3& pos, const glm::vec2& rot )
 {
 	// Set the initial position and rotation
-	position = pos;
-	rotation = rot;
+	glm::vec3 m_position = glm::vec3( -10.0f, -10.0f, 0.0f );
+	glm::vec2 m_rotation = rot;
 
 	// Update the camera's axis
 	UpdateVectors();
 }
 
-void Camera::ProcessKeyboard( CameraMovement dir, float deltaT )
+void Camera::ProcessKeyboard( const CameraMovement& dir, const float& deltaT )
 {
 	// Define the velocity the camera is moving at
-	float velocity = ( movingFast ? moveSpeedFast : moveSpeed ) * deltaT;
+	float velocity = ( m_movingFast ? m_moveSpeedFast : m_moveSpeed ) * deltaT;
 
 	// Move in the correct direction based upon the input direction
 	switch ( dir )
 	{
 	case CameraMovement::FORWARD:
-		position += zDirection * velocity;
+		m_position += m_zDirection * velocity;
 		break;
 	case CameraMovement::BACKWARD:
-		position -= zDirection * velocity;
+		m_position -= m_zDirection * velocity;
 		break;
 	case CameraMovement::RIGHT:
-		position += xDirection * velocity;
+		m_position += m_xDirection * velocity;
 		break;
 	case CameraMovement::LEFT:
-		position -= xDirection * velocity;
+		m_position -= m_xDirection * velocity;
 		break;
 	case CameraMovement::UP:
-		position += worldUp * velocity;
+		m_position += m_worldUp * velocity;
 		break;
 	case CameraMovement::DOWN:
-		position -= worldUp * velocity;
+		m_position -= m_worldUp * velocity;
 		break;
 	default:
 		break;
 	}
+
+	// Use the LookAt matrix to move and rotate the camera
+	m_view = glm::lookAt( m_position, m_position + m_zDirection, m_worldUp );
 }
 
-void Camera::ProcessMouse( float xOff, float yOff )
+void Camera::ProcessMouse( const float& xOff, const float& yOff )
 {
-	// Dampen or strengthen the mouse input to a reasonable level
-	xOff *= mouseSensitivity;
-	yOff *= mouseSensitivity;
-
-	// Add the adjusted offsets to the rotation
-	rotation.x += xOff;
-	rotation.y += yOff;
+	// Dampen or strengthen the mouse input to a reasonable level and add to the rotation
+	m_rotation.x += xOff * m_mouseSensitivity;
+	m_rotation.y += yOff * m_mouseSensitivity;
 
 	// Update the axis of the camera (Also ensures that the rotation is clamped)
 	UpdateVectors();
 }
 
-void Camera::ProcessMouseScroll( float yOff )
+void Camera::ProcessMouseScroll( const float& yOff )
 {
 	// Reduce the field of view when the user scrolls (adjusted to make it easier/harder)
-	fov -= yOff * zoomSensitivity;
+	m_fov -= yOff * m_zoomSensitivity;
 
 	// Clamp the FOV so that the camera is still usable
-	if ( fov < minFOV )
-		fov = minFOV;
-	else if ( fov > maxFOV )
-		fov = maxFOV;
+	if ( m_fov < minFOV )
+		m_fov = minFOV;
+	else if ( m_fov > maxFOV )
+		m_fov = maxFOV;
 }
 
 glm::mat4 Camera::GetViewMatrix()
 {
-	// Use the LookAt matrix to move and rotate the camera
-	return glm::lookAt( position, position + zDirection, worldUp );
+	return m_view;
 }
 
 glm::vec3 Camera::GetPos()
 {
-	return position;
+	return m_position;
 }
 
 void Camera::UpdateVectors()
 {
 	// Fix yaw by removing the remainder (modulo 2 pi)
-	rotation.x = glm::mod( rotation.x, glm::pi<float>() * 2.0f );
+	m_rotation.x = glm::mod( m_rotation.x, glm::pi<float>() * 2.0f );
 
 	// Constrain pitch
-	if ( rotation.y > glm::radians( 89.0f ) )
-		rotation.y = glm::radians( 89.0f );
-	if ( rotation.y < glm::radians( -89.0f ) )
-		rotation.y = glm::radians( -89.0f );
+	if ( m_rotation.y > glm::radians( 89.0f ) )
+		m_rotation.y = glm::radians( 89.0f );
+	if ( m_rotation.y < glm::radians( -89.0f ) )
+		m_rotation.y = glm::radians( -89.0f );
 
 	// Set new direction
-	zDirection = glm::vec3(
-		cos( rotation.x ) * cos( rotation.y ),
-		sin( rotation.y ),
-		sin( rotation.x ) * cos( rotation.y ) );
+	m_zDirection = glm::vec3(
+		cos( m_rotation.x ) * cos( m_rotation.y ),
+		sin( m_rotation.y ),
+		sin( m_rotation.x ) * cos( m_rotation.y ) );
 
 	// Normalise it
-	zDirection = glm::normalize( zDirection );
+	m_zDirection = glm::normalize( m_zDirection );
 
 	// Recalculate axis
-	xDirection = glm::normalize( glm::cross( zDirection, worldUp ) );
-	yDirection = glm::normalize( glm::cross( xDirection, zDirection ) );
+	m_xDirection = glm::normalize( glm::cross( m_zDirection, m_worldUp ) );
+	m_yDirection = glm::normalize( glm::cross( m_xDirection, m_zDirection ) );
+
+	// Use the LookAt matrix to move and rotate the camera
+	m_view = glm::lookAt( m_position, m_position + m_zDirection, m_worldUp );
 }
